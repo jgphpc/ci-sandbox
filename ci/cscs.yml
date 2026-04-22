@@ -1,0 +1,28 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - sphexa_build
+
+variables:
+  MYUENV: prgenv-gnu/26.3:v1
+#  PERSIST_IMAGE_NAME: $CSCS_REGISTRY_PATH/helloworld:$CI_COMMIT_SHORT_SHA
+
+sph-build-cuda13-sm90-debug:
+  stage: sphexa_build
+  image: $MYUENV
+  extends: [.uenv-runner-daint-gh200]
+  variables:
+    SLURM_TIMELIMIT: '00:01:00'
+    PERSIST_IMAGE_NAME: ${CSCS_REGISTRY_PATH}/ci_sandbox_jg:${CI_COMMIT_SHORT_SHA}
+    WITH_UENV_VIEW: 'spack'  # this is not 'default' view
+    SLURM_JOB_NUM_NODES: 1
+  before_script:
+    # NOTE: error 'script config should be a string or a nested array of
+    # strings up to 10 levels deep' -> add '' around the command to execute
+    - echo "CI_PROJECT_URL=$CI_PROJECT_URL"
+    - echo "CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA"
+    - echo "CI_COMMIT_SHA=$CI_COMMIT_SHA"
+    - 'uenv_dir=`echo $UENV_VIEW |cut -d: -f1`'
+    - 'uenv_view=`echo $UENV_VIEW |cut -d: -f3`'
+    - echo "uenv_dir=$uenv_dir uenv_view=$uenv_view / UENV_VIEW=$UENV_VIEW"
